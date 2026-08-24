@@ -1,30 +1,37 @@
 # Secure Client–Server Game
 
-> Strong supporting — Security · Birzeit University Computer Engineering portfolio
+> Applied security portfolio project · Python · Networking · Cryptography
 
-A security coursework project centered on a game interaction between a user and server with protected communication and security controls.
+A client–server game designed around protected communication, cryptographic operations, and security-aware interaction between a user and a remote service.
+
+## Engineering focus
+
+- Client–server protocol design
+- Key exchange and cryptographic operations
+- Protected message handling
+- Networking and socket communication
+- Threat-aware implementation decisions
+
+## Repository status
+
+The original academic submission is preserved in `1212359.rar`. This repository is retained as evidence of applied security and networking work; the archive requires a RAR-compatible extraction tool.
+
+## Review path
+
+1. Extract `1212359.rar`.
+2. Identify the server and client entry points.
+3. Configure host/port values for a local environment.
+4. Start the server, then connect with the client.
+5. Review the accompanying protocol and security logic before exposing the service beyond localhost.
 
 ## What this demonstrates
 
-- Secure client-server design
-- applied cryptography
-- networking
-- threat-aware implementation
-
-## Repository contents
-
-The original submission is preserved in `1212359.rar`.
-
-## Getting started
-
-Extract the archive with a RAR-compatible tool and follow the included source structure.
-
-> This is an academic project preserved as portfolio evidence. Review and configure any environment-specific paths, credentials, hardware pins, or dependencies before running it.
+The project connects security concepts to working client–server code rather than treating cryptography as an isolated exercise.
 
 ## Credits
 
-Academic/portfolio work by Noura Manassra. Original commit history is preserved.
+Academic project by Noura Manassra. Original artifacts and commit history are preserved.
 
-## Portfolio focus
+## Portfolio context
 
-This repository supports my broader focus on **Backend + AI engineering**, including APIs, data, intelligent systems, security, systems fundamentals, and practical problem-solving.
+Part of my **Full-Stack + AI** portfolio, complementing application development with secure communication and systems-level reasoning.
