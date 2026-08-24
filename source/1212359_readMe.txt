@@ -1,0 +1,189 @@
+Guessing Game Project || SECURITY LAB
+                     												       Contributor A || 1000000 || Section No. 2
+
+This is a guessing game project written in Python. The game works using a TCP connection between a server and a client. 
+The server runs on a Linux virtual machine (VM), and the client runs on a Windows PC. 
+The game allows the player to guess numbers, view their scores, see game history, and check the leaderboard.
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									Part 1: Setup Instructions
+<<<<<<<<====================================================================================================================================================>>>>>>>
+
+A. Requirements
+
+To run this project, you need:
+1. Python 3 installed on both the Linux VM and the Windows PC.
+2. No extra Python libraries are required. The code only uses built-in modules plus:
+   - pycryptodome (for cryptographic functions, install with: pip install pycryptodome)
+3. A working VirtualBox VM with Ubuntu or any other Linux distribution.
+4. Both the PC and VM must be connected to the same network (Wi-Fi).
+5. Port 5000 should be available on both sides.
+6. Disable the Windows Firewall temporarily for testing.
+
+B. Firewall and Network Configuration
+
+1. I turned off the Windows firewall:
+   - Opened Control Panel on my Windows PC
+   - Went to Windows Defender Firewall
+   - Clicked "Turn Windows Defender Firewall on or off"
+   - Turned it off for both Private and Public networks
+
+2. I changed the VM network settings:
+   - Opened VirtualBox > Settings for my VM > Network
+   - Changed "Attached to" from NAT to "Bridged Adapter"
+   - Selected the Wi-Fi adapter (e.g., Intel(R) Dual Band Wireless-AC 3168)
+   - This allows the VM to use the same Wi-Fi as the PC
+
+3. I got the IP address of the VM:
+   - In the VM terminal, I typed: ip addr
+   - The IP address I found was: 192.168.1.16
+   - I used this IP address in the client.py code:
+     host = "192.168.1.16"
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									Part 2: How to Run the Game
+<<<<<<<<====================================================================================================================================================>>>>>>>
+
+1. Run the server (on the Linux VM):
+   - Open terminal in VM
+   - Go to the project directory: cd ~/home/seed/Desktop/1000000
+   - Run the server: python3 server_phase3_XX.py
+
+2. Run the client (on the Windows PC):
+   - Open Command Prompt directory: cd C:\Users\My-Laptop\OneDrive\Desktop\1000000\1000000
+   - Navigate to the folder containing client.py
+   - Run the client: python client_phase2_XX.py
+
+3. The client will connect to the server and start the game.
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									Part 3: How the Server Code Works
+<<<<<<<<====================================================================================================================================================>>>>>>>
+
+The server is the main controller of the game. It performs the following:
+
+- waits for a client to connect
+- requests the player's name upon connection
+- presents a menu with options:
+   1. start a new game
+   2. view the leaderboard
+   3. view the game history
+   4. exit the game
+- if a game starts:
+   - asks if timed mode should be enabled (30 seconds max)
+   - asks for difficulty level:
+     - easy (1-50)
+     - medium (1-100)
+     - hard (1-200)
+   - picks a random number in the selected range
+   - receives guesses from the client and replies with hints:
+     - “higher” or “lower” plus proximity hints (“burning hot”, “warm”, “cold”)
+   - on correct guess:
+     - shows attempts and time taken
+     - calculates and updates player’s score
+     - saves results in leaderboard.csv and history.txt
+- allows viewing and deleting entries from leaderboard
+- allows viewing full game history
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									Part 4: How the Client Code Works
+<<<<<<<<====================================================================================================================================================>>>>>>>
+
+The client connects to the server and interacts with the user. It performs the following:
+
+- connects to the server using the VM’s IP and port 5000
+- sends the user's name to the server
+- displays the menu received from the server
+- sends user's choices back to the server
+- if a game starts:
+   - sends inputs for timed mode and difficulty
+   - sends user’s guesses and displays server hints
+   - shows final score, attempts, and time after winning
+- can view leaderboard and request deletion of entries
+- can view game history
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									Part 5: Security Implementation and Details
+<<<<<<<<====================================================================================================================================================>>>>>>>
+
+- implemented mutual authentication between client (Alice) and server (Bob) using rsa signatures
+- used 2048-bit diffie-hellman key exchange with exponents 'a' and 'b' generated securely per game round
+- used sha256 for hashing challenge values and session keys
+- established a fresh aes-256-cbc session key k each round for encrypting all data
+- session ivs are generated freshly for each handshake and exchanged securely
+- after authentication and key establishment, the dh exponents and session key are destroyed to guarantee perfect forward secrecy (pfs)
+- used hardcoded rsa public and private keys generated by:
+  - selecting primes p and q from https://primes.utm.edu/curios/page.php?number_id=10421 (pb)
+  - selecting primes p and q from https://primes.utm.edu/curios/page.php?number_id=162 (qb)
+  - selecting primes p and q from https://primes.utm.edu/curios/page.php?number_id=4575 (pa)
+  - selecting primes p and q from https://primes.utm.edu/curios/page.php?number_id=4544 (qa)
+  - computing modulus n = p * q and euler's totient
+  - selecting encryption exponent e and computing private key d using modular inverse (see example code included)
+- modular exponentiation implemented via efficient repeated squaring method (https://rosettacode.org/wiki/Modular_exponentiation)
+- diffie-hellman group parameters from rfc3526 2048-bit modp group: https://www.ietf.org/rfc/rfc3526.txt
+- generator g = 2
+- prime p is the 2048-bit prime from rfc3526 group
+
+Additional helper scripts used:
+- helperA.py and helperB.py were used to calculate d, n, euler’s totient, and e values for RSA keys
+- modp_cal.py was used to convert the given hexadecimal MODP 2048-bit prime into an integer
+
+Challenges ra and rb:
+- 256-bit random nonces generated using cryptographically secure rng each game round
+
+Mutual Authentication Flow:
+- client sends dh public key a, challenge ra, and session iv
+- server responds with dh public key b, challenge rb, session iv, and signature sig_b
+- client verifies sig_b using bob’s public key and computes session key k
+- client sends signature sig_a to server to authenticate alice
+- server verifies sig_a and computes shared key k
+- if any verification fails, connection/game round is terminated
+
+Security Notes:
+- rsa keys are hardcoded for simplicity, but this is insecure for real applications
+- using primes p and q too close can enable factorization attacks — primes chosen to avoid this
+- all secret values like exponents a, b, and session key k are securely destroyed after use to ensure pfs
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									Part 6: Files used by the Project
+<<<<<<<<====================================================================================================================================================>>>>>>>
+
+- history.txt contains the game history log with player names, attempts, and times
+- leaderboard.csv contains players’ names, their best attempts, and total scores ranked
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									Part 7: Known Issues and Solutions
+<<<<<<<<====================================================================================================================================================>>>>>>>
+
+- firewall and network issues: port 5000 must be open; windows firewall may block connection; disabling firewall or adding exceptions recommended
+- virtual machine network setup: bridged adapter mode in virtualbox is needed to allow vm and pc to communicate on the same network
+- prime selection risks: choosing p and q too close weakens rsa key security by enabling factorization; use primes from provided links
+- private key security: hardcoding private keys is insecure; keys should be stored securely and encrypted in production
+- iv synchronization: session ivs must be shared correctly and freshly generated each session for aes-cbc to be secure
+- exponents and session key destruction: failure to clear exponents a and b or session key k after use compromises perfect forward secrecy
+- error handling: client or server terminates session upon failed authentication to prevent mitm attacks
+- large key sizes: using 2048-bit dh and rsa keys results in computational overhead but is necessary for security
+- input validation: server validates all inputs and limits invalid attempts to prevent abuse
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									Part 8: How to Test
+<<<<<<<<====================================================================================================================================================>>>>>>>
+
+Test case 1 – Normal test:
+- run server and client
+- play two different game rounds
+- observe printed exponents (a, b), nonces (ra, rb), session keys (k), ivs, and authentication confirmations on both sides
+
+Test case 2 – Trudy posing as Bob:
+- change Bob's private key d to an incorrect value in server code
+- run client and server
+- client should fail to authenticate Bob, print error, and terminate the game round
+
+Test case 3 – Trudy posing as Alice:
+- change Alice's private key d to an incorrect value in client code
+- run client and server
+- server should fail to authenticate Alice, print error, and terminate the game round
+
+<<<<<<<<====================================================================================================================================================>>>>>>>
+            									End of README
+<<<<<<<<====================================================================================================================================================>>>>>>>
